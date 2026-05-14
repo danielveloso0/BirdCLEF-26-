@@ -1,0 +1,14 @@
+{
+  "id": "d4nveloso97/birdCLEF26",
+  "title": "birdCLEF26",
+  "code_file": "bird_clef2026.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": true,
+  "competition_sources": ["birdclef-2026"],
+  "dataset_sources": [],
+  "kernel_sources": []
+}

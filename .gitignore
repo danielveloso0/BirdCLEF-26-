@@ -1,0 +1,20 @@
+# Ambientes Virtuais (Nunca suba isso, é pesado e específico da sua máquina)
+.venv/
+env/
+
+
+.env
+kaggle.json
+
+# Dados e Datasets 
+dataset/
+
+# Saídas locais e Checkpoints de modelos
+.kaggle-outputs/
+*.pth
+*.pt
+*.h5
+
+# Arquivos temporários do Python e do Jupyter
+__pycache__/
+.ipynb_checkpoints/

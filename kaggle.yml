@@ -1,0 +1,8 @@
+project: birdCLEF26
+kernel_slug: d4nveloso97/birdCLEF26
+code_file: bird-clef2026.ipynb
+language: python
+accelerator: gpu
+internet: true
+competition_sources:
+  - birdclef-2026
