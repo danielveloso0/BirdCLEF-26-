@@ -19,8 +19,8 @@ from torchvision import transforms
 class CFG():
     df_train = pd.read_csv('/kaggle/input/competitions/birdclef-2026/train.csv')
     train_soundscape =pd.read_csv('/kaggle/input/competitions/birdclef-2026/train_soundscapes_labels.csv') 
-    train_dir = 'kaggle/input/competitions/birdclef-2026/train_audio'
-    test_dir = 'kaggle/input/competitions/birdclef-2026/test_audio'
+    train_dir = '/kaggle/input/competitions/birdclef-2026/train_audio'
+    test_dir = '/kaggle/input/competitions/birdclef-2026/test_audio'
     num_class = len(df_train.primary_label.unique()) 
     SAMPLE_RATE = 32000
     N_MELS     = 64
