@@ -23,7 +23,7 @@ class BirdDataset(Dataset):
         row = self.df.loc[idx]
         file_path = os.path.join(self.data_dir, row['filename'])
         audio, sr = DataPipelines().open_audio(file_path, sr=self.sr)
-        mel_spec = DataPipelines().mel_spectogram(audio, sr=self.sr, n_mels=CFG.N_MELS, n_fft=CFG.N_FFT, hop_length=CFG.HOP_LENGTH)  
+        mel_spec = DataPipelines().mel_spectogram(audio)  
         label = row['primary_label']
         # one hot encode the label 
         label = torch.nn.functional.one_hot(torch.tensor(label), num_classes=CFG.num_class)
