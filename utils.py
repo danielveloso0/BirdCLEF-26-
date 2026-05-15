@@ -119,7 +119,7 @@ class DataPipelines():
         else:
             # Retorna apenas a matriz reduzida (útil para modelos clássicos como Random Forest)
             return PCs
-    def mel_spectogram(x,n_mel=CFG.N_MELS,n_ffts=CFG.N_FFT,length=CFG.HOP_LENGTH):
+    def mel_spectogram(self, x, n_mel=CFG.N_MELS, n_ffts=CFG.N_FFT, length=CFG.HOP_LENGTH):
         mel_spec = melspectrogram(y=x, sr=CFG.SAMPLE_RATE, n_fft=n_ffts, 
             hop_length=length, 
             n_mels=n_mel)
