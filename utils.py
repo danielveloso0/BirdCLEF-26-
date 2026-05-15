@@ -14,7 +14,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 # Pytorch data augumentation
 from torchvision import transforms
-
+import random
 
 class CFG():
     df_train = pd.read_csv('/kaggle/input/competitions/birdclef-2026/train.csv')

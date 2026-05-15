@@ -16,20 +16,21 @@ class BirdDataset(Dataset):
         self.data_dir = data_dir
         self.sr = sr
         self.augmentations = augmentations
-    
+        self.apply_PCA = apply_PCA
     def __len__(self):
         return len(self.df)
     def __getitem__(self, idx):
         row = self.df.loc[idx]
         file_path = os.path.join(self.data_dir, row['filename'])
         audio, sr = DataPipelines().open_audio(file_path, sr=self.sr)
-        mel_spec = DataPipelines().melspectrogram(audio, sr=sr, n_mels=CFG.N_MELS, n_fft=CFG.N_FFT, hop_length=CFG.HOP_LENGTH)  
+        mel_spec = DataPipelines().mel_spectogram(audio, sr=sr, n_mels=CFG.N_MELS, n_fft=CFG.N_FFT, hop_length=CFG.HOP_LENGTH)  
         label = row['primary_label']
         # one hot encode the label 
         label = torch.nn.functional.one_hot(torch.tensor(label), num_classes=CFG.num_class)
 
-        if apply_PCA:
+        if self.apply_PCA:
             mel_spec = DataPipelines().audioPCA(mel_spec)
+            audio = self.augmentations(mel_spec)
         if self.augmentations is not None:
             audio = self.augmentations(mel_spec)
         return mel_spec, label
