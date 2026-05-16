@@ -32,9 +32,9 @@ class BirdDataset(Dataset):
 
         if self.apply_PCA:
             mel_spec = DataPipelines().audioPCA(mel_spec)
-            audio = self.augmentations(mel_spec)
+            mel_spec = self.augmentations(mel_spec)
         if self.augmentations is not None:
-            audio = self.augmentations(mel_spec)
-        return mel_spec, label
-        
+            mel_spec = self.augmentations(mel_spec)
+        return mel_spec.unsqueeze(0), label
+
         
