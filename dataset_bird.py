@@ -20,10 +20,10 @@ class BirdDataset(Dataset):
     def __len__(self):
         return len(self.df)
     def __getitem__(self, idx):
-        row = self.df.loc[idx]
+        row = self.df.iloc[idx]
         file_path = os.path.join(self.data_dir, row['filename'])
         audio, sr = DataPipelines().open_audio(file_path, sr=self.sr)
-        mel_spec = DataPipelines().mel_spectogram(audio)  
+        mel_spec = DataPipelines().mel_spectogram(audio) 
         label = row['primary_label']
         # one hot encode the label 
         label = torch.nn.functional.one_hot(torch.tensor(label), num_classes=CFG.num_class)
