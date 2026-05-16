@@ -23,6 +23,8 @@ class BirdDataset(Dataset):
         row = self.df.iloc[idx]
         file_path = os.path.join(self.data_dir, row['filename'])
         audio, sr = DataPipelines().open_audio(file_path, sr=self.sr)
+        max_length = 5 * self.sr 
+        audio = librosa.util.fix_length(data=audio, size=max_length)
         mel_spec = DataPipelines().mel_spectogram(audio) 
         label = row['primary_label']
         # one hot encode the label 
