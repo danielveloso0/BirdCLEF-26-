@@ -35,6 +35,6 @@ class BirdDataset(Dataset):
             mel_spec = self.augmentations(mel_spec)
         if self.augmentations is not None:
             mel_spec = self.augmentations(mel_spec)
-        return mel_spec.unsqueeze(0), label
+        return mel_spec, label
 
         
