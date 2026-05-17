@@ -174,13 +174,10 @@ def spec_augment(spec, num_masks=2, freq_mask_pct=0.15, time_mask_pct=0.15):
 def data_transforms(mode='train'):
     if mode == 'train':
         return transforms.Compose([
-            transforms.Lambda(lambda x: spec_augment(x)),
-            transforms.ToTensor(),
             transforms.Normalize(mean=[0.5], std=[0.5])
         ])
     else:
         return transforms.Compose([
-            transforms.ToTensor(),
             transforms.Normalize(mean=[0.5], std=[0.5])
         ])
     
