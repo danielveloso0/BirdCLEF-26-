@@ -26,7 +26,6 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, device,ep
             running_loss += loss.item()
         print(f'Epoch {epoch+1}/{epochs}, Loss: {running_loss/len(train_loader):.4f}')
         scheduler.step()
-        scheduler.zero_grad()
         evaluate(model,val_loader,criterion,device)
     return model
 def evaluate(model, test_loader,  criterion, device):
