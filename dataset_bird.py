@@ -78,7 +78,7 @@ class BirdDataset(Dataset):
         # Gera e codifica a label
         label = row['primary_label']
         label = torch.tensor(label).long()
-        
+        print(f"Tipo do mel_spec: {type(mel_spec)} | Tipo da label: {type(label)}")
         return mel_spec, label
 
         
