@@ -11,8 +11,6 @@ from sklearn.preprocessing import LabelEncoder
 import torchaudio
 class BirdDataset(Dataset):
     def __init__(self, df, sr=32000, augmentations=data_transforms(), data_dir=CFG.train_dir, apply_PCA=False):
-        le = LabelEncoder()
-        df['primary_label'] = le.fit_transform(df['primary_label'])
         self.df = df
         self.data_dir = data_dir
         self.sr = sr
@@ -66,7 +64,7 @@ class BirdDataset(Dataset):
             # IMPORTANTE: Se o seu audioPCA devolver um numpy array,
             # precisamos voltar para Tensor para a aumentação não quebrar
             if not isinstance(mel_spec, torch.Tensor):
-                mel_spec = torch.tensor(mel_spec, dtype=torch.float32)
+                mel_spec = torch.tensor(mel_spec, dtype=torch.float32) 
             
             if mel_spec.ndim == 2:
                 mel_spec = mel_spec.unsqueeze(0)
