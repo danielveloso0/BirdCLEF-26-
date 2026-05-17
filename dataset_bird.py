@@ -72,7 +72,7 @@ class BirdDataset(Dataset):
         # Aplica as aumentações (Apenas 1 vez)
         if self.augmentations is not None:
             mel_spec = self.augmentations(mel_spec)
-            
+        mel_spec = (mel_spec - mel_spec.mean()) / (mel_spec.std() + 1e-6)
         # Gera e codifica a label
         label = row['primary_label']
         label = torch.tensor(label).long()
