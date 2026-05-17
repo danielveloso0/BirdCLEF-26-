@@ -77,7 +77,7 @@ class BirdDataset(Dataset):
             
         # Gera e codifica a label
         label = row['primary_label']
-        label = torch.nn.functional.one_hot(torch.tensor(label), num_classes=CFG.num_class)
+        label = torch.tensor(label).long()
         
         return mel_spec, label
 
