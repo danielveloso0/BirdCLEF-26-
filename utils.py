@@ -181,5 +181,46 @@ def data_transforms(mode='train'):
             transforms.Normalize(mean=[0.5], std=[0.5])
         ])
     
-
-
+def torchPCA(mel_spec, n_components=32, reconstruct=True):
+    """
+    Aplica PCA via SVD nativo do PyTorch em um espectrograma.
+    
+    Args:
+        mel_spec (Tensor): Espectrograma no formato [1, Mels, Tempo] (ex: [1, 64, 313]).
+        n_components (int): Número de componentes principais para manter.
+        reconstruct (bool): Se True, reconstrói o espectrograma filtrado (mesmo tamanho original).
+                            Se False, retorna o espectrograma reduzido [1, n_components, Tempo].
+    Returns:
+        Tensor: O espectrograma processado via PCA.
+    """
+    # 1. Remove a dimensão do canal para facilitar a matemática: vira [64, 313]
+    x = mel_spec.squeeze(0) 
+    
+    # 2. O formato padrão para PCA é [Amostras, Features]. 
+    # Vamos transpor de [Mels, Tempo] para [Tempo, Mels] (ex: [313, 64])
+    x = x.T 
+    
+    # 3. Centralizar os dados (Subtrair a média de cada feature/Mel)
+    mean = torch.mean(x, dim=0)
+    x_centered = x - mean
+    
+    # 4. Aplicar o SVD (Decomposição em Valores Singulares)
+    # U: Vetores singulares à esquerda
+    # S: Valores singulares
+    # Vh: Vetores singulares à direita (já transpostos no PyTorch)
+    U, S, Vh = torch.linalg.svd(x_centered, full_matrices=False)
+    
+    # 5. Selecionar os top 'k' componentes principais (Truncamento)
+    Vh_k = Vh[:n_components, :] # Formato: [k, Mels]
+    
+    # 6. Projetar os dados originais no novo espaço (Dimensionalidade Reduzida)
+    x_projected = x_centered @ Vh_k.T # Formato: [Tempo, k]
+    
+    if reconstruct:
+        # Reconstrói os dados originais (Denoising). Remove o ruído jogando fora componentes fracos.
+        x_reconstructed = (x_projected @ Vh_k) + mean
+        # Transpõe de volta para [Mels, Tempo] e devolve o canal no início
+        return x_reconstructed.T.unsqueeze(0)
+    else:
+        # Se você quiser alimentar o modelo com o formato reduzido
+        return x_projected.T.unsqueeze(0)

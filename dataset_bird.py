@@ -6,16 +6,17 @@ import pandas as pd
 import os
 import librosa 
 # data augumentations
-from utils import DataPipelines, CFG, data_transforms
+from utils import DataPipelines, CFG, data_transforms, torchPCA
 from sklearn.preprocessing import LabelEncoder
 import torchaudio
 class BirdDataset(Dataset):
-    def __init__(self, df, sr=32000, augmentations=data_transforms(), data_dir=CFG.train_dir, apply_PCA=False):
+    def __init__(self, df, sr=32000, augmentations=data_transforms(), data_dir=CFG.train_dir, apply_PCA=False,n_PCA=16):
         self.df = df
         self.data_dir = data_dir
         self.sr = sr
         self.augmentations = augmentations
         self.apply_PCA = apply_PCA
+        self.n_PCA = n_PCA
         
         # Otimização excelente! Declarar os transforms no __init__ economiza CPU.
         self.mel_spec_transform = torchaudio.transforms.MelSpectrogram(
@@ -59,15 +60,7 @@ class BirdDataset(Dataset):
             
         # Aplica o PCA (se ativo)
         if self.apply_PCA:
-            mel_spec = DataPipelines().audioPCA(mel_spec)
-            
-            # IMPORTANTE: Se o seu audioPCA devolver um numpy array,
-            # precisamos voltar para Tensor para a aumentação não quebrar
-            if not isinstance(mel_spec, torch.Tensor):
-                mel_spec = torch.tensor(mel_spec, dtype=torch.float32) 
-            
-            if mel_spec.ndim == 2:
-                mel_spec = mel_spec.unsqueeze(0)
+            mel_spec = torchPCA(mel_spec, n_components=self.n_PCA)
 
         # Aplica as aumentações (Apenas 1 vez)
         if self.augmentations is not None:
