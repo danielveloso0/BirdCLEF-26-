@@ -64,29 +64,28 @@ def evaluate(model, test_loader, criterion, device):
             # 1. Transforma os logits brutos em probabilidades (0 a 1) via Softmax
             probs = torch.nn.functional.softmax(outputs, dim=1)
             
-            # 2. Guarda tudo em formato NumPy para o scikit-learn calcular depois
-            all_probs.append(probs.cpu().numpy())
-            all_labels.append(labels.cpu().numpy())
-            
-    # Junta todos os lotes (batches) em matrizes gigantes
+            # Junta todos os lotes (batches) em matrizes gigantes
     all_probs = np.vstack(all_probs)
     all_labels = np.concatenate(all_labels)
     
-    # 3. Calcula o Macro ROC-AUC (estratégia One-vs-Rest para classes múltiplas)
-    # Nota: Usamos multi_class='ovr' porque avalia cada classe contra as outras.
+    # 3. Calcula o Macro ROC-AUC corrigindo o desalinhamento de classes
     try:
-        # Nota: O Kaggle ignora classes que não aparecem no set de teste. 
-        # Passar as labels existentes evita erros se alguma classe sumir no split.
+        # Descobre quais classes realmente existem no gabarito de validação
         classes_presentes = np.unique(all_labels)
+        
+        # FILTRO MÁGICO: Filtra as colunas das probabilidades para bater exatamente com as classes presentes
+        probs_filtradas = all_probs[:, classes_presentes]
+        
         roc_auc = roc_auc_score(
             all_labels, 
-            all_probs, 
+            probs_filtradas, 
             multi_class='ovr', 
             average='macro', 
             labels=classes_presentes
         )
     except Exception as e:
-        roc_auc = 0.0 # Caso ocorra algum problema de amostragem nos primeiros lotes
+        print(f"\n[Erro no ROC-AUC]: {e}") # Se der erro, agora ele te avisa o motivo real!
+        roc_auc = 0.0
         
     print(f'Test Loss: {test_loss/len(test_loader):.4f} | Competition ROC-AUC: {roc_auc:.4f}')
     return roc_auc
