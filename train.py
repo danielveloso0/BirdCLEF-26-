@@ -46,6 +46,11 @@ def evaluate_oldest(model, test_loader,  criterion, device):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
     print(f'Test Loss: {test_loss/len(test_loader):.4f}, Accuracy: {100 * correct / total:.2f}%')
+import numpy as np
+import torch
+import torch.nn.functional as F
+from sklearn.metrics import roc_auc_score
+
 def evaluate(model, test_loader, criterion, device):
     model.eval()
     test_loss = 0.0
@@ -57,23 +62,31 @@ def evaluate(model, test_loader, criterion, device):
         for inputs, labels in test_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             
+            # Forward pass
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             test_loss += loss.item()
             
-            # 1. Transforma os logits brutos em probabilidades (0 a 1) via Softmax
-            probs = torch.nn.functional.softmax(outputs, dim=1)
+            # 1. Converte as saídas brutas em probabilidades (0 a 1)
+            probs = F.softmax(outputs, dim=1)
             
-            # Junta todos os lotes (batches) em matrizes gigantes
+            # 2. GUARDA OS DADOS (Certifique-se de que estas duas linhas estão bem indentadas aqui dentro)
+            all_probs.append(probs.cpu().numpy())
+            all_labels.append(labels.cpu().numpy())
+            
+    # 🚨 TRAVA DE SEGURANÇA: Se a lista continuar vazia, investigamos o Dataloader
+    if len(all_probs) == 0:
+        print("\n❌ [ERRO] O loop de validação terminou e 'all_probs' continua vazio!")
+        print(f"Verifique se o seu 'val_loader' possui dados. Tamanho atual: {len(test_loader)} lotes.\n")
+        return 0.0
+
+    # Junta todos os lotes em matrizes estáveis do NumPy
     all_probs = np.vstack(all_probs)
     all_labels = np.concatenate(all_labels)
     
-    # 3. Calcula o Macro ROC-AUC corrigindo o desalinhamento de classes
+    # 3. Calcula o Macro ROC-AUC filtrando as classes do subset
     try:
-        # Descobre quais classes realmente existem no gabarito de validação
         classes_presentes = np.unique(all_labels)
-        
-        # FILTRO MÁGICO: Filtra as colunas das probabilidades para bater exatamente com as classes presentes
         probs_filtradas = all_probs[:, classes_presentes]
         
         roc_auc = roc_auc_score(
@@ -84,7 +97,7 @@ def evaluate(model, test_loader, criterion, device):
             labels=classes_presentes
         )
     except Exception as e:
-        print(f"\n[Erro no ROC-AUC]: {e}") # Se der erro, agora ele te avisa o motivo real!
+        print(f"\n[Erro no cálculo do ROC-AUC]: {e}")
         roc_auc = 0.0
         
     print(f'Test Loss: {test_loss/len(test_loader):.4f} | Competition ROC-AUC: {roc_auc:.4f}')
