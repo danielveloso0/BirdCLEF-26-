@@ -17,8 +17,11 @@ import sklearn.metrics
 
 def train_model(model, train_loader, val_loader, criterion, optimizer, device,epochs=10,step_size=2, gamma=0.5):
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+    best_roc_auc = 0.0
     checkpoint_dir = '/kaggle/working/checkpoints'
-    os.makedirs(checkpoint_dir, exist_ok=True)
+    if not os.path.exists(checkpoint_dir):
+        print(f'Criando diretório de checkpoints em:{checkpoint_dir}')
+        os.makedirs(checkpoint_dir, exist_ok=True)
     model.train()
     for epoch in range(epochs):
         running_loss = 0.0
