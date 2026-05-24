@@ -17,6 +17,8 @@ import sklearn.metrics
 
 def train_model(model, train_loader, val_loader, criterion, optimizer, device,epochs=10,step_size=2, gamma=0.5):
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+    checkpoint_dir = '/kaggle/working/checkpoints'
+    os.makedirs(checkpoint_dir, exist_ok=True)
     model.train()
     for epoch in range(epochs):
         running_loss = 0.0
@@ -30,7 +32,22 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, device,ep
             running_loss += loss.item()
         print(f'Epoch {epoch+1}/{epochs}, Loss: {running_loss/len(train_loader):.4f}')
         scheduler.step()
-        evaluate(model,val_loader,criterion,device)
+        current_roc_auc= evaluate(model,val_loader,criterion,device)
+        checkpoint = {
+            'epoch': epoch + 1,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'scheduler_state_dict': scheduler.state_dict(),
+            'best_roc_auc': max(current_roc_auc, best_roc_auc)
+        }
+        
+        torch.save(checkpoint, os.path.join(checkpoint_dir, 'last_checkpoint.pth'))
+     
+        if current_roc_auc > best_roc_auc:
+            print(f"Novo Recorde Detectado! ROC-AUC subiu de {best_roc_auc:.4f} para {current_roc_auc:.4f}.")
+            print("Salvando o melhor modelo em: 'checkpoints/best_model.pth'")
+            best_roc_auc = current_roc_auc
+            torch.save(checkpoint, os.path.join(checkpoint_dir, 'best_model.pth'))
     return model
 def evaluate_oldest(model, test_loader,  criterion, device):
     model.eval()
@@ -74,16 +91,13 @@ def evaluate(model, test_loader, criterion, device):
             all_labels.append(labels.cpu().numpy())
             
     if len(all_probs) == 0:
-        print("\n❌ [ERRO] O val_loader está vazio.")
+        print("\n [ERRO] O val_loader está vazio.")
         return 0.0
 
     # Consolida os arrays de todos os lotes
     all_probs = np.vstack(all_probs)
     all_labels = np.concatenate(all_labels)
-    
-    # -----------------------------------------------------------------
-    # 👑 ADAPTAÇÃO FIEL DA MÉTRICA OFICIAL DA COMPETIÇÃO
-    # -----------------------------------------------------------------
+
     num_classes = all_probs.shape[1]
     
     # 1. Transforma as labels 1D em uma matriz One-Hot (Equivalente ao DataFrame 'solution')
